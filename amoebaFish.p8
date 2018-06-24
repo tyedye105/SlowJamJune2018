@@ -29,15 +29,15 @@ end
 function draw_titlebg()
 	circfill(58,64,95,2)--flesh color
 	circfill(58,64,82,0)--outline
-	circfill(58,64,80,13)--rib thing?
+	circfill(58,64,80,4)--rib thing?
 	circfill(58,64,70,0)
 	circfill(58,64,69,2)
 	circfill(68,64,50,0)
-	circfill(68,64,49,13)
+	circfill(68,64,49,4)
 	circfill(68,64,40,0)
 	circfill(68,64,39,2)
 	circfill(78,66,20,0)
-	circfill(78,66,19,13)
+	circfill(78,66,19,4)
 	circfill(78,66,18,0)
 	circfill(78,66,17,0)	
 end
