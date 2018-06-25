@@ -3,6 +3,10 @@ version 16
 __lua__
 --healthiest catch
 --summer slow jams 6/18
+--by nextlevelbanana & tyedye105
+--thanks to mboffin and cortex:
+--i definitely cribbed heavily
+--from your carts
 
 function _init()
  topspd = 3
@@ -22,6 +26,10 @@ function _init()
  spawn_timer = spawn_time
  _update = menu_update
  _draw = menu_draw
+ did_hit = false
+ flags = {
+  p = 2
+ }
 end
 
 function menu_update()
@@ -63,6 +71,8 @@ function game_draw()
  for i,c in pairs(critters) do
   spr(c.s,c.x,c.y)
  end
+ print(p.x+p.dx..","..p.y+p.dy,10,2,7)
+ print(did_hit,80,2,7)
 end
 
 function update_events()
@@ -158,38 +168,63 @@ function move_player()
  	p.dy= mid(topspd*-1, p.dy+accl, topspd)
 	end
 
- if (hits_wall()) rebound()
- 
+
+ local x1 = p.x + p.dx
+ local y1 = p.y + p.dy
+ if hits_wall(x1,y1) then
+  rebound(x1,y1)
+ elseif hits_plaque(x1,y1) then
+  rebound_plaque(x1,y1)
+ end
  p.x = mid(screenl-current,p.dx+p.x,screenr-p.w)
  p.y =mid(screentop,p.y + p.dy, screenbase - p.h)
  
- p.x -= current
+ p.x = max(p.x-current,0)
  p.dx *=drg
  
  if (abs(p.dx)<0.02) p.dx=0
  if (abs(p.dy)<0.02) p.dy=0
 end
 
-function can_move(x,y,w,h)
-return true
-end
+--function can_move(x,y,w,h)
+--return true
+--end
 
-function hits_wall()
- if (p.x + current + p.dx <= screenl
-  or (p.x + p.dx >= screenr-p.w)
-  or (p.y + p.dy <= screentop)
-  or (p.y + p.dy >= screenbase-p.h)) then
+--x1 and y1 are the projected new coords
+function hits_wall(x1,y1)
+ if (x1 + current <= screenl
+  or (x1 >= screenr-p.w)
+  or (y1 <= screentop)
+  or (y1 >= screenbase-p.h)) then
  return true
  else return false
  end
 end
 
-function rebound()
- if ((p.x+p.dx <=screenl) or (p.x + p.dx+p.w >= screenr)) then
+function hits_plaque(x1,y1)
+ for i=x1+current,x1+current+p.w do
+  for j = y1,y1+p.h do
+   if get_flag(i,j) == flags.p then
+    if (is_solid(i,j)) then
+     return true
+    end
+   end
+  end
+ end
+ return false
+end
+
+function rebound_plaque()
+ p.dx *= bounce
+ p.dy *= bounce
+end
+
+function rebound(x1,y1)
+ if ((x1 <=screenl) or (x1+p.w >= screenr)) then
   p.dx = p.dx*bounce
  end
  
- if ((p.y+p.dy <=screentop) or (p.y + p.dy+p.h >= screenbase)) then
+ if ((y1 <=screentop) or (y1+p.h >= screenbase)) then
   p.dy = p.dy*bounce
  end
 end 
@@ -214,7 +249,7 @@ function add_critter()
  
   add(critters, {
    x = screenr + 1,
-   y = rndintb(screenbase-8,screentop),
+   y = rndintb(screentop,screenbase-8),
    s = rndintb(16,22),
    dx = -(flr(rnd(8))/8)-.01,
    dy = 0,
@@ -359,6 +394,14 @@ end
 function rndintb(a,b)
  return flr(rndb(a,b))
 end
+
+function get_flag(x,y)
+ return fget(mget(flr(x/8),flr(y/8)))
+end
+
+function is_solid(i,j)
+ return pget(i,j) == 9 
+end
 __gfx__
 00000000006666607760000006776000000000000666000076000000067760000677600000000000999999999999999999999999999999999999999900000000
 00000000067777767776660006777600000000000677607766000000067776000677760000000000999990000009999909999999999999999999900000000000
@@ -488,7 +531,7 @@ __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a3b3a1a1a3f3f3f3b3a1a3b3a1a3f3b3
 __gff__
-0000000000000000000002020202020000000000000000000000020200000000000000000000000000000000000000000000000000000000000002020202020200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000002020202020000000000000000000000020200000000000000000000000000000000000000000000000000000000000002020202020200000000000000000000020202020200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 000000000000000000000000000018180000000000000000000000000000000000000000000000000000000000000000000000003f3f3f3f3f3f3f3c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000666666000000000000
