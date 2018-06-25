@@ -51,8 +51,8 @@ end
 
 function game_draw()
  cls()
--- map(0,0,0,0,16,16)
  dbground()
+ --map(0,0,0,0,16,16)
  spr(p.s,p.x,p.y,2,1)
  spr(h.s,h.x,h.y)
  draw_cilia()
