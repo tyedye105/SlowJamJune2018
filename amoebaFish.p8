@@ -15,6 +15,10 @@ function _init()
  critters = {}
  events = {}
  spawn_time = 70
+ screentop = 16
+ screenbase = 112
+ screenl = 0
+ screenr = 127
  spawn_timer = spawn_time
  _update = menu_update
  _draw = menu_draw
@@ -52,7 +56,7 @@ end
 function game_draw()
  cls()
  dbground()
- --map(0,0,0,0,16,16)
+ map(0,0,0,0,16,16)
  spr(p.s,p.x,p.y,2,1)
  spr(h.s,h.x,h.y)
  draw_cilia()
@@ -75,7 +79,7 @@ end
 --draw background
 function dbground()
 fillp(0b1100011001101100)
-rectfill(0,16,128,108,2)
+rectfill(screenl,screentop,screenr,screenbase-2,2)
 fillp()
 end
 -->8
@@ -121,7 +125,9 @@ function make_player()
    y = 60,
    dx = 0, --initial velocity
    dy = 0,
-   s = 1 --sprite number
+   s = 1, --sprite number
+   h = 8,
+   w = 16
   }
   h = { --hook
    xoff = 12, --where on the body
@@ -154,8 +160,8 @@ function move_player()
 
  if (hits_wall()) rebound()
  
- p.x = mid(0-current,p.dx+p.x,120)
- p.y =mid(0,p.y + p.dy, 120)
+ p.x = mid(screenl-current,p.dx+p.x,screenr-p.w)
+ p.y =mid(screentop,p.y + p.dy, screenbase - p.h)
  
  p.x -= current
  p.dx *=drg
@@ -169,21 +175,21 @@ return true
 end
 
 function hits_wall()
- if (p.x + current + p.dx <= 0
-  or (p.x + p.dx >= 120)
-  or (p.y + p.dy <= 0)
-  or (p.y + p.dy >= 120)) then
+ if (p.x + current + p.dx <= screenl
+  or (p.x + p.dx >= screenr-p.w)
+  or (p.y + p.dy <= screentop)
+  or (p.y + p.dy >= screenbase-p.h)) then
  return true
  else return false
  end
 end
 
 function rebound()
- if ((p.x+p.dx <=0) or (p.x + p.dx+7 >= 127)) then
+ if ((p.x+p.dx <=screenl) or (p.x + p.dx+p.w >= screenr)) then
   p.dx = p.dx*bounce
  end
  
- if ((p.y+p.dy <=0) or (p.y + p.dy+7 >= 127)) then
+ if ((p.y+p.dy <=screentop) or (p.y + p.dy+p.h >= screenbase)) then
   p.dy = p.dy*bounce
  end
 end 
@@ -203,11 +209,14 @@ function add_critter()
  --spawn random baddie
  --just offscreen
  --at random height
+ --randomly selects a sprite from contiguous series
+ --dx random btwn -.01 and -.8
+ 
   add(critters, {
-   x = 128,
-   y = flr(rnd(120)),
-   s = flr(rnd(6))+16,
-   dx =-(flr(rnd(8))/8)-.01,
+   x = screenr + 1,
+   y = rndintb(screenbase-8,screentop),
+   s = rndintb(16,22),
+   dx = -(flr(rnd(8))/8)-.01,
    dy = 0,
    wv = rnd(1)+0.3,
    caught = false,
@@ -237,7 +246,7 @@ function update_critters()
 
  local to_del = {}
  for c in all(critters) do
-  if c.x < -8 then add(to_del, c) end
+  if c.x < screenl - c.w then add(to_del, c) end
  end
  
  for c in all(to_del) do
@@ -250,12 +259,7 @@ end
 -->8
 --hook functions
 function draw_cilia()
- if not h.retracted then
-  local startx = min(p.x+h.xoff,h.x)
-  local starty = min(p.y+h.yoff,h.y)
-  local endx = max(p.x+h.xoff,h.x)
-  local endy = max(p.y+h.yoff,h.y)
- 
+ if not h.retracted then 
   line(p.x+h.xoff,p.y+h.yoff,h.x,h.y,7)
  end
 end
@@ -340,6 +344,20 @@ function retract()
   h.x = h.getx(h.xoff)
   h.y = h.gety(h.yoff)
   h.retracted = true
+end
+-->8
+--utils
+
+--random number between a (inc)
+--and b (exc)
+function rndb(a,b)
+ return rnd(b-a) +a
+end
+
+--random integer between a (inc)
+--and b (exc)
+function rndintb(a,b)
+ return flr(rndb(a,b))
 end
 __gfx__
 00000000006666607760000006776000000000000666000076000000067760000677600000000000999999999999999999999999999999999999999900000000
