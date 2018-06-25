@@ -272,7 +272,10 @@ end
 
 function update_hook()
  if (btnp(❎) and h.retracted) then
-  local c = cocreate(throw_hook)
+  local c = cocreate(throw_hook_up)
+  add(events, c)
+ elseif (btnp(🅾️) and h.retracted) then
+  local c = cocreate(throw_hook_down)
   add(events, c)
  elseif h.retracted then
   h.x = h.getx(h.xoff)
@@ -283,21 +286,43 @@ function update_hook()
  end
 end
  
-function throw_hook()
+function throw_hook_up()
+	--extend hook
+  h.retracted = false
+  
+  for i=1,20 do
+    h.x += 1
+    h.y -= 1
+  end
+  
+  retract()
+  
+end  
+
+--i know this isn't esp. "dry",
+--but coroutines can't take
+--params or return values.
+function throw_hook_down()
  --extend hook
   h.retracted = false
+  
   for i=1,20 do
     h.x += 1
     h.y += 1
   end
   
-  --leave the hook extended
+  retract()
+
+end
+
+function retract()
+  --leave the hook extended 
+  --for 10 ticks
   for i=1,10 do yield()end
   
+  --retract hook
   local dirx = 1
   local diry = 1
-  
-  --retract hook
   for i=1,dur do
    if (h.x > p.x) then dirx = -1 else dirx = 1 end 
    if (h.y > p.y) then diry = -1 else diry = 1 end
@@ -307,9 +332,11 @@ function throw_hook()
    h.y += dy
    yield()
   end
-   h.x = h.getx(h.xoff)
-   h.y = h.gety(h.yoff)
-   h.retracted = true
+  
+    
+  h.x = h.getx(h.xoff)
+  h.y = h.gety(h.yoff)
+  h.retracted = true
 end
 __gfx__
 00000000006666607760000006776000000000000000000000000000000000000677600000000000999999999999999999999999999999999999999900000000
