@@ -42,6 +42,7 @@ function menu_update()
   _update = game_update
   _draw = game_draw
  elseif btnp(🅾️) then
+ 	_update= rules_update
   _draw = rules_draw
  end
 end
@@ -52,9 +53,19 @@ function menu_draw()
 end
 
 function rules_draw()
- cls(1)
+ cls(0)
 end
 
+function rules_update()
+if btnp(⬅️) then
+	pageleft()
+	elseif btnp(➡️) then
+	pageright() 
+	elseif btnp(❎)then
+	_update=menu_update
+	_draw=menu_draw
+	end
+end	
 
 function game_update()
  move_player()
@@ -285,7 +296,7 @@ function move_critter(c)
      c.y = y1
      c.dx = 0
      c.dy = 0
-     c.s +=7
+     c.s +=7	
      c.stuck = true
      add(stuck,c)
      del(critters,c)
@@ -490,6 +501,10 @@ function rebound_plaque(critter)
   critter.dy *= bounce
  end
 end
+-->8
+--rules
+
+
 __gfx__
 0000000000666660776000000888800000aa00000000a0000b00000000000bb00006600000000099000000000000000000000000000000000000000000000000
 000000000677777677766600822288000aaa000000aaa000bbb00b00bb0bbb006666600099000009000000000000000000000000000000000000000000000000
