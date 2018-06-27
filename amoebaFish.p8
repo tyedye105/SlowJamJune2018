@@ -55,7 +55,7 @@ end
 
 function rules_draw()
  cls(0)
- print(rules[t],64,64,8)
+ print(rules[p],64,64,8)
 end
 
 function rules_update()
@@ -506,7 +506,7 @@ end
 -->8
 --rules
 function make_rules()
-t=1
+p=1
 rules={
 "test",
 "one",
@@ -516,14 +516,14 @@ rules={
 end
 
 function pageleft()
-	if(t!=1) then 
-	t-=1
+	if(p!=1) then 
+	p-=1
 	end
 end
 
 function pageright()
-	if(t!=4) then
-	t+=1
+	if(p!=4) then
+	p+=1
 	end
 end	
 __gfx__
