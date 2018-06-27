@@ -42,6 +42,7 @@ function menu_update()
   _update = game_update
   _draw = game_draw
  elseif btnp(🅾️) then
+ 		make_rules()
  	_update= rules_update
   _draw = rules_draw
  end
@@ -54,6 +55,7 @@ end
 
 function rules_draw()
  cls(0)
+ print(rules[t],64,64,8)
 end
 
 function rules_update()
@@ -503,8 +505,27 @@ function rebound_plaque(critter)
 end
 -->8
 --rules
+function make_rules()
+t=1
+rules={
+"test",
+"one",
+"two",
+"three"
+}
+end
 
+function pageleft()
+	if(t!=1) then 
+	t-=1
+	end
+end
 
+function pageright()
+	if(t!=4) then
+	t+=1
+	end
+end	
 __gfx__
 0000000000666660776000000888800000aa00000000a0000b00000000000bb00006600000000099000000000000000000000000000000000000000000000000
 000000000677777677766600822288000aaa000000aaa000bbb00b00bb0bbb006666600099000009000000000000000000000000000000000000000000000000
