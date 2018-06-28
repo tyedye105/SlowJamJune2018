@@ -103,7 +103,12 @@ function level_up()
  if (hooked > 0 and hooked %10 == 0) then
   max_critters += 3
   spawn_timer = 0
-  --add_critter()
+  add_critter()
+  spawn_timer = 0
+  add_critter()
+  spawn_timer = 0
+  add_critter()
+  
   spawn_time -=5
   cls(9)
   flip()
@@ -273,7 +278,13 @@ function init_critters()
 end
 
 function add_critter()
- if (#critters < max_critters
+--blood cells don't count
+--toward enemy cap
+ local baddiecount = 0
+ for c in all(critters) do
+  if (not fget(c.s,3)) baddiecount += 1
+ end
+ if (baddiecount < max_critters
   and spawn_timer==0) then
 
  --spawn random baddie
