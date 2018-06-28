@@ -9,7 +9,7 @@ __lua__
 --from your carts
 
 function _init()
- topspd = 3
+ topspd = 2.8
  accl = 1
  drg = 0.8
  current = 0.2
@@ -24,8 +24,6 @@ function _init()
  screenl = 0
  screenr = 127
  spawn_timer = spawn_time
- _update = menu_update
- _draw = menu_draw
  flags = {
   p = 2
  }
@@ -33,6 +31,11 @@ function _init()
  space = 0
  has_loaded = false
  health = 50
+ hooked = 0
+ lvl = 1
+ _update = menu_update
+ _draw = menu_draw
+ 
 end
 
 function menu_update()
@@ -61,10 +64,7 @@ function game_update()
  update_hook()
  update_critters()
  update_events()
- if (is_clogged()) then
-  _draw = game_over_draw()
-  _update = menu_update()
- end
+ check_end()
 end
 
 
@@ -79,7 +79,8 @@ function game_draw()
  spr(p.s,p.x,p.y,2,1)
  spr(h.s,h.x,h.y)
  draw_cilia()
- print("host health: "..health,10,2,7)
+ print(hooked,100,2,15)
+ print("host health: "..health,2,2,7)
  for i,c in pairs(critters) do
   spr(c.s,c.x,c.y)
  end
@@ -95,11 +96,45 @@ function update_events()
   end
 end
 
+function level_up()
+ lvl = flr(hooked/10)
+ if (hooked > 0 and hooked %10 == 0) then
+  max_critters += 3
+  spawn_timer = 0
+  --add_critter()
+  spawn_time -=5
+  cls(9)
+  flip()
+  cls(10)
+  flip()
+  cls(9)
+  flip()
+ end
+end
+
+function check_end()
+ if (is_clogged()) then
+  _draw = game_over_draw
+  _update = game_over_update
+ elseif health > 100 then
+  _update = game_over_update
+  _draw = game_win_draw
+ end
+end
+
+function game_over_update()
+  if (btn(❎)) _init()
+end
 
 function game_over_draw()
  cls(8)
  print("oh crap, your host died!",20,60,0)
  print("❎ to play again",20,80,0)
+end
+
+function game_win_draw()
+ cls(1)
+ print("woo, you win!",20,60,7)
 end
 
 function is_clogged()
@@ -327,10 +362,12 @@ end
 
 function score_hooked_critters(to_score)
  for c in all(to_score) do
-  if (fget(c.sp,3)) then
+  if (fget(c.s,3)) then
 	  health -=5
 	 else
 	  health += 3
+	  hooked += 1
+	  level_up()
 	 end
 	end   
 end
@@ -367,9 +404,9 @@ function update_hook()
   h.x = h.getx(h.xoff)
   h.y = h.gety(h.yoff)
  end
- if not h.retracted then
-  catch()
- end
+-- if not h.retracted then
+ -- catch()
+ --end
 end
  
 function throw_hook_up()
@@ -379,6 +416,8 @@ function throw_hook_up()
   for i=1,20 do
     h.x += 1
     h.y -= 1
+    catch()
+ --   yield()
   end
   
   retract()
@@ -395,6 +434,8 @@ function throw_hook_down()
   for i=1,20 do
     h.x += 1
     h.y += 1
+    catch()
+--    yield()
   end
   
   retract()
@@ -416,6 +457,7 @@ function retract()
    h.x += dx
    local dy = diry*abs((h.y - (p.y+h.yoff)))/dur
    h.y += dy
+   catch()
    yield()
   end
   
