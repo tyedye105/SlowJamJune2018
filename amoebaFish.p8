@@ -9,16 +9,16 @@ __lua__
 --from your carts
 
 function _init()
- topspd = 2.9
+ topspd = 3
  accl = 1
  drg = 0.8
  current = 0.2
  bounce = -0.8
  dur = 5
- max_critters=8
+ max_critters=50
  critters = {}
  events = {}
- spawn_time = 60
+ spawn_time = 20
  screentop = 16
  screenbase = 112
  screenl = 0
@@ -36,6 +36,7 @@ function _init()
  _update = menu_update
  _draw = menu_draw
  tick = 1
+ mod = 3
 end
 
 function menu_update()
@@ -134,27 +135,43 @@ end
 
 function check_end()
  if (is_clogged()) then
+ local c = cocreate(stop_heart)
+  add(events, c)
+  death_timer = 0
+  ♥ = {s = 10,x = 54, y = 32}
+  music(-1)
   _draw = game_over_draw
   _update = game_over_update
  elseif health >= 100 then
+  music(-1)
   _update = game_over_update
   _draw = game_win_draw
  end
 end
 
 function game_over_update()
+  update_events()
   if (btn(❎)) _init()
 end
 
-function heart_draw()
- pal(8,0)
- spr(10,54,32,2,2)
-end
 function game_over_draw()
  cls(8)
- heart_draw()
+ pal(8,0)
+ spr(♥.s,♥.x,♥.y,2,2)
  print("oh crap, your host died!",20,60,0)
  print("❎ to play again",20,80,0)
+end
+
+function stop_heart()
+ while(death_timer < 150) do
+  death_timer += 1
+  if death_timer%mod == 0 then
+   mod =flr(mod*1.5)
+   if (♥.s == 10) ♥.s = 12 else ♥.s = 10
+  end
+  yield()
+ end
+ ♥.s = 14
 end
 
 function game_win_draw()
@@ -165,6 +182,10 @@ function game_win_draw()
  print("tap ❎ twice to play again!",10,100,7)
 end
 
+function game_win_update()
+ if (btn(❎)) _init()
+end
+
 function is_clogged()
  if (health <= 0) return true
 end
@@ -172,7 +193,7 @@ end
 --draw background
 function dbground()
 fillp(0b1100011001101100)
-rectfill(screenl,screentop,screenr,screenbase-2,2)
+rectfill(screenl,screentop,screenr,screenbase+6,2)
 fillp()
 end
 -->8
@@ -292,7 +313,7 @@ end
 -->8
 --critter functions
 function init_critters()
- for i=1,flr(max_critters*.75) do
+ for i=1,flr(max_critters*.5) do
   spawn_timer = 0
   add_critter()
  end
@@ -315,7 +336,7 @@ function add_critter()
  --dx random btwn -.01 and -.8
  
   local c = {
-   x = screenr + 1,
+   x = screenr + 1+ rnd(40),
    y = rndintb(screentop+16,screenbase-16),
    s = rndintb(3,10),
    cs = 3,
@@ -899,6 +920,7 @@ __map__
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002c000000000000000000000000000000
 __sfx__
 000100000205002050020500305003050040500305003050020500205001050050500505018050040500505003050040501f05004050010500305002050010501f05021050230500105002050010500305003050
+001100090d04000000000000d04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
-03 00424344
+03 01424344
 
