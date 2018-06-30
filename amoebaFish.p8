@@ -400,6 +400,8 @@ function anim_critter(c)
  if (fget(c.s,3)) return
  if (tick %10 == 0) then
   c.cs += 16
+  --this is a hack
+  --and i'm sorry
   if c.cs > c.s + 48 then
    c.cs = c.s
   end
@@ -582,6 +584,8 @@ end
 --rules
 function make_rules()
 pg=1
+ruletick = 0
+init_eaten()
 rules={
 "this is moe",
 "and this joe",
@@ -593,17 +597,30 @@ rules={
 "moe and joe too:(" }
 end
 
+function init_eaten()
+ eaten = {}
+ for i=4,9 do
+  local e = {
+   s = i,
+   cs = i,
+   x = (i-4) * 22,
+   y = 64 + rndb(-30,30)
+  }
+  add(eaten,e)
+ end
+end
+
 function draw_sprites()
 	if(pg==1) then
- spr(1,44,60+3*sin(time()*.8),2,1)
+ spr(1,44+sin(time()*2),60+3*sin(time()*.8),2,1)
  elseif (pg==2) then
- spr(18,48,60+3*sin(time()*.8),2,1)
+ spr(18,48+sin(time()*2),60+3*sin(time()*.8),2,1)
  elseif (pg==3) then
  draw_titlebg()
  elseif (pg==4) then
- map(64,48)
+  draw_they_eat_these()
  elseif (pg==5) then
- spr(3,52,64)
+ spr(3,52+sin(time()*2),60+3*sin(time()*.8))
  end
 end
 
@@ -615,8 +632,19 @@ function draw_rules()
 	end
 end
 
-
-
+function draw_they_eat_these()
+ ruletick += 1
+ for e in all(eaten) do
+  if (ruletick %10 == 0) then
+  e.cs += 16
+  if e.cs > e.s + 48 then
+   e.cs = e.s
+  end
+ end
+  spr(e.cs,e.x,
+  e.y+3*sin(e.s/8*time()))
+ end
+end
 
 function pageleft()
 	if(pg!=1) then 
