@@ -30,7 +30,7 @@ function _init()
  stuck = {}
  space = 0
  has_loaded = false
- health = 100
+ health = 50
  hooked = 0
  lvl = 1
  _update = menu_update
@@ -40,10 +40,7 @@ end
 
 function menu_update()
  if (btnp(❎)) then
-  init_critters()
-  make_player()
-  _update = game_update
-  _draw = game_draw
+  start_game()
  elseif btnp(🅾️) then
  		make_rules()
  	_update= rules_update
@@ -56,20 +53,28 @@ function menu_draw()
  draw_title() 
 end
 
+function start_game()
+  init_critters()
+  make_player()
+  _update = game_update
+  _draw = game_draw
+  music(00)
+end
+
 function rules_draw()
  cls(0)
  draw_sprites()
  draw_rules()
+ draw_footer()
 end
 
 function rules_update()
-if btnp(⬅️) then
-	pageleft()
+ if btnp(⬅️) then
+	 pageleft()
 	elseif btnp(➡️) then
-	pageright() 
+	 pageright() 
 	elseif btnp(❎)then
-	_update=menu_update
-	_draw=menu_draw
+  start_game()
 	end
 end	
 
@@ -124,12 +129,6 @@ function level_up()
   add_critter()
   
   spawn_time -=5
-  cls(9)
-  flip()
-  cls(10)
-  flip()
-  cls(9)
-  flip()
  end
 end
 
@@ -137,7 +136,7 @@ function check_end()
  if (is_clogged()) then
   _draw = game_over_draw
   _update = game_over_update
- elseif health > 100 then
+ elseif health >= 100 then
   _update = game_over_update
   _draw = game_win_draw
  end
@@ -582,7 +581,7 @@ end
 -->8
 --rules
 function make_rules()
-p=1
+pg=1
 rules={
 "this is moe",
 "and this joe",
@@ -595,24 +594,24 @@ rules={
 end
 
 function draw_sprites()
-	if(p==1) then
- spr(1,44,64,2,1)
- elseif (p==2) then
- spr(18,48,64,2,1)
- elseif (p==3) then
+	if(pg==1) then
+ spr(1,44,60+3*sin(time()*.8),2,1)
+ elseif (pg==2) then
+ spr(18,48,60+3*sin(time()*.8),2,1)
+ elseif (pg==3) then
  draw_titlebg()
- elseif (p==4) then
+ elseif (pg==4) then
  map(64,48)
- elseif (p==5) then
+ elseif (pg==5) then
  spr(3,52,64)
  end
 end
 
 function draw_rules()
-	if(p<7) then
-		print(rules[p],32,20,7)
-	elseif(p>=7) then
-		print(rules[p],32,20,8)
+	if(pg<7) then
+		print(rules[pg],32,20,7)
+	elseif(pg>=7) then
+		print(rules[pg],32,20,8)
 	end
 end
 
@@ -620,16 +619,23 @@ end
 
 
 function pageleft()
-	if(p!=1) then 
-	p-=1
+	if(pg!=1) then 
+	pg-=1
 	end
 end
 
 function pageright()
-	if(p!=8) then
-	p+=1
+	if(pg!=8) then
+	pg+=1
 	end
 end	
+
+function draw_footer()
+ 
+ if (pg != 1) print("⬅️",2,120,6) else print("⬅️",2,120,5)
+ if (pg != 8) print("➡️",120,120,6) else print("➡️",120,120,5)
+ print("❎ to start",40,120,6)
+end
 __gfx__
 0000000000666660776000000888800000aa00000000a0000b00000000000bb00006600000000033088000000000000000800000000000000080000000000000
 000000000677777677766600822288000aaa000000aaa000bbb00b00bb0bbb006666600033000003088000000000000000800000000000000080000000000000
@@ -865,3 +871,6 @@ __map__
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002c000000000000000000000000000000
 __sfx__
 000100000205002050020500305003050040500305003050020500205001050050500505018050040500505003050040501f05004050010500305002050010501f05021050230500105002050010500305003050
+__music__
+03 00424344
+
