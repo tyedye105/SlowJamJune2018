@@ -33,14 +33,17 @@ function _init()
  space = 0
  has_loaded = false
  health = 50
+
+ hooked = 0
+ lvl = 1
+ _update = menu_update
+ _draw = menu_draw
+ tick = 1
 end
 
 function menu_update()
  if (btnp(❎)) then
-  init_critters()
-  make_player()
-  _update = game_update
-  _draw = game_draw
+  start_game()
  elseif btnp(🅾️) then
  		make_rules()
  	_update= rules_update
@@ -53,20 +56,28 @@ function menu_draw()
  draw_title() 
 end
 
+function start_game()
+  init_critters()
+  make_player()
+  _update = game_update
+  _draw = game_draw
+  music(00)
+end
+
 function rules_draw()
  cls(0)
  draw_sprites()
  draw_rules()
+ draw_footer()
 end
 
 function rules_update()
-if btnp(⬅️) then
-	pageleft()
+ if btnp(⬅️) then
+	 pageleft()
 	elseif btnp(➡️) then
-	pageright() 
+	 pageright() 
 	elseif btnp(❎)then
-	_update=menu_update
-	_draw=menu_draw
+  start_game()
 	end
 end	
 
@@ -109,6 +120,31 @@ function update_events()
   end
 end
 
+
+function level_up()
+ lvl = flr(hooked/10)
+ if (hooked > 0 and hooked %10 == 0) then
+  max_critters += 3
+  spawn_timer = 0
+  add_critter()
+  spawn_timer = 0
+  add_critter()
+  spawn_timer = 0
+  add_critter()
+  
+  spawn_time -=5
+ end
+end
+
+function check_end()
+ if (is_clogged()) then
+  _draw = game_over_draw
+  _update = game_over_update
+ elseif health >= 100 then
+  _update = game_over_update
+  _draw = game_win_draw
+ end
+end
 
 function game_over_draw()
  cls(8)
@@ -339,6 +375,19 @@ function update_critters()
   
 end
 
+
+function anim_critter(c)
+ if (fget(c.s,3)) return
+ if (tick %10 == 0) then
+  c.cs += 16
+  --this is a hack
+  --and i'm sorry
+  if c.cs > c.s + 48 then
+   c.cs = c.s
+  end
+ end
+end
+
 function score_hooked_critters(to_score)
  for c in all(to_score) do
   if (fget(c.sp,3)) then
@@ -507,7 +556,9 @@ end
 -->8
 --rules
 function make_rules()
-p=1
+pg=1
+ruletick = 0
+init_eaten()
 rules={
 "this is moe",
 "and this joe",
@@ -519,42 +570,74 @@ rules={
 "moe and joe too:(" }
 end
 
+function init_eaten()
+ eaten = {}
+ for i=4,9 do
+  local e = {
+   s = i,
+   cs = i,
+   x = (i-4) * 22,
+   y = 64 + rndb(-30,30)
+  }
+  add(eaten,e)
+ end
+end
+
 function draw_sprites()
-	if(p==1) then
- spr(1,44,64,2,1)
- elseif (p==2) then
- spr(48,44,64,2,1)
- elseif (p==3) then
+
+	if(pg==1) then
+ spr(1,44+sin(time()*2),60+3*sin(time()*.8),2,1)
+ elseif (pg==2) then
+ spr(18,48+sin(time()*2),60+3*sin(time()*.8),2,1)
+ elseif (pg==3) then
  draw_titlebg()
- elseif (p==4) then
- map(64,48)
- elseif (p==5) then
- spr(3,48,48)
+ elseif (pg==4) then
+  draw_they_eat_these()
+ elseif (pg==5) then
+ spr(3,52+sin(time()*2),60+3*sin(time()*.8))
  end
 end
 
 function draw_rules()
-	if(p<7) then
-		print(rules[p],32,20,7)
-	elseif(p>=7) then
-		print(rules[p],32,20,8)
+	if(pg<7) then
+		print(rules[pg],32,20,7)
+	elseif(pg>=7) then
+		print(rules[pg],32,20,8)
 	end
 end
 
-
-
+function draw_they_eat_these()
+ ruletick += 1
+ for e in all(eaten) do
+  if (ruletick %10 == 0) then
+  e.cs += 16
+  if e.cs > e.s + 48 then
+   e.cs = e.s
+  end
+ end
+  spr(e.cs,e.x,
+  e.y+3*sin(e.s/8*time()))
+ end
+end
 
 function pageleft()
-	if(p!=1) then 
-	p-=1
+	if(pg!=1) then 
+	pg-=1
 	end
 end
 
 function pageright()
-	if(p!=8) then
-	p+=1
+	if(pg!=8) then
+	pg+=1
 	end
 end	
+
+function draw_footer()
+ 
+ if (pg != 1) print("⬅️",2,120,6) else print("⬅️",2,120,5)
+ if (pg != 8) print("➡️",120,120,6) else print("➡️",120,120,5)
+ print("❎ to start",40,120,6)
+end
 __gfx__
 0000000000666660776000000888800000aa00000000a0000b00000000000bb00006600000000099000000000000000000000000000000000000000000000000
 000000000677777677766600822288000aaa000000aaa000bbb00b00bb0bbb006666600099000009000000000000000000000000000000000000000000000000
@@ -849,8 +932,10 @@ __map__
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002c2d2e2f000000000000000000000000
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003c3d3e3f000000000000000000000000
 __sfx__
+
 011100090104000000000000104000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0007000006070040700407005070050700707008050070500705007050070500705008050090500a0500000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 00 00424344
+
 
